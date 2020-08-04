@@ -1,0 +1,14 @@
+{% extends "todo/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'todo/todo.js' %}"></script>
+{% endblock %}
+<!-- ---------------------------------------------------------------- -->
+{% block body %}
+
+{% if user.is_authenticated %}
+    All tasks show here
+{% endif %}
+
+{% endblock %}

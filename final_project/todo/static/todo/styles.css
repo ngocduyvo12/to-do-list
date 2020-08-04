@@ -1,0 +1,23 @@
+#compose-body {
+    min-height: 100px;
+    width: 50%;
+    margin-left: 20px;
+}
+
+h4 {
+    margin-left: 20px;
+}
+
+
+#newTodo {
+    margin-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#time-picker {
+    width: 20%;
+    margin-left: 20px;
+    display: block;
+    height: calc(1.5em + .75rem + 2px);
+}

@@ -1,0 +1,25 @@
+{% extends "todo/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'todo/todo.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+{% if user.is_authenticated %}
+
+<div id="warning-view">
+</div>
+<div id="compose-view">
+    <h4>New Todo</h4>
+    <form id="compose-form">
+        <textarea class="form-control" id="compose-body" placeholder="Body" required></textarea>
+        <input class="form-control" id="time-picker" type="datetime-local" id="deadline" name="deadline" required>
+        <input type="hidden" id="userID" name="userID" value="{{user.id}}">
+        <input id="newTodo" type="submit" class="btn btn-primary"/>
+    </form>
+</div>
+{% endif %}
+
+{% endblock %}
