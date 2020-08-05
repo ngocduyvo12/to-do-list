@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from datetime import tzinfo, timedelta, datetime
 
 from .models import User, Tasks
 
@@ -15,9 +16,29 @@ from .models import User, Tasks
 def index(request):
     return render(request, "todo/index.html")
 
+@login_required
+def active(request):
+    #get all the task from model
+    tasks = Tasks.objects.filter(completed=False)
+    #return task in order of most upcoming first
+    tasks = tasks.order_by("timeset").all()
+    return JsonResponse([task.serialize() for task in tasks], safe=False)
 
 def create(request):
     return render(request, "todo/create.html")    
+
+@csrf_exempt
+@login_required
+def complete(request, task_id):
+    task = Tasks.objects.get(
+        id = task_id
+    )
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        task.completed = data["completed"]
+        task.save()
+        return JsonResponse({"message": "successfully updated"})   
+
 
 @csrf_exempt
 @login_required
@@ -33,6 +54,7 @@ def add(request):
     date = data.get("date", "")
     hour = data.get("hour", "")
     minute = data.get("minute", "")
+    timeset = data.get("date_time", "")
 
     task = Tasks(
         user = request.user,
@@ -41,10 +63,11 @@ def add(request):
         month = month,
         date = date,
         hour = hour,
-        minute = minute
+        minute = minute,
+        timeset = timeset,
     )
     task.save()
-    return JsonResponse({"message": "Task created successfully."}, status=201)    
+    return JsonResponse({"message": "Task created successfully.", "timesaved": task.timeset}, status=201)    
 
 def login_view(request):
     if request.method == "POST":

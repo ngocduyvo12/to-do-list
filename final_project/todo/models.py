@@ -8,6 +8,7 @@ class User(AbstractUser):
 class Tasks(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="user")
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Posted at")
+    timeset = models.DateTimeField()
     content = models.TextField()
     year = models.IntegerField()
     month = models.IntegerField()
@@ -24,7 +25,8 @@ class Tasks(models.Model):
             "id": self.id,
             "user": self.user.username,
             "content": self.content,
-            "timestamp": self.timestamp.strftime("%b %-d %Y, %-I:%M %p"),
+            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
+            "timeset": self.timeset.strftime("%b %d %Y, %I:%M %p"),
             "year": self.year,
             "month": self.month,
             "date": self.date,

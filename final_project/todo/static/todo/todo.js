@@ -3,6 +3,32 @@ document.addEventListener('DOMContentLoaded', function () {
     if (document.getElementById('newTodo') !== null) {
         document.getElementById('newTodo').addEventListener('click', createTodo)
     }
+
+    //determine if we are currently in the home page, if we are then load the active list function:
+    if (`${window.location.origin}/` == window.location.href) {
+        window.setInterval(activeTasks, 1000);
+    }
+});
+//change the format of moment
+moment.updateLocale('en', {
+    relativeTime : {
+        future: "in %s",
+        past:   "%s ago",
+        s  : '%d seconds',
+        ss : '%d seconds',
+        m:  "a minute",
+        mm: "%d minutes",
+        h:  "an hour",
+        hh: "%d hours",
+        d:  "a day",
+        dd: "%d days",
+        w:  "a week",
+        ww: "%d weeks",
+        M:  "a month",
+        MM: "%d months",
+        y:  "a year",
+        yy: "%d years"
+    }
 });
 
 function createTodo(event) {
@@ -32,35 +58,96 @@ function createTodo(event) {
     console.log(`remaining time: ${time_difference_minute} minutes ${time_difference_seconds} seconds`);
     console.log(`add url: ${window.location.href}/add`);
 
-    //this can be used to determine if currently in homepage
-    var random = true;
-    if (window.location.origin = window.location.href){
-        random = false
-    }
-    console.log(random)
 
     // send the post request to 'create/add'
-    // fetch(`${window.location.href}/add`, {
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //         content: content,
-    //         year: year,
-    //         month: month,
-    //         date: date,
-    //         hour: hour,
-    //         minute: minute
-    //     })
-    // })
-    // .then(response => response.json())
-    // .then(result => {
-    //     //Print result
-    //     console.log(result);
-    //     $(`#warning-view`).html(`
-    //     <div class="alert alert-success" role="alert">
-    //         Successfully created post
-    //     </div>
-    //     `)
-    //     //if everything is ok then just redirect back to home page.
-    //     // window.location.href="/";
-    // })
+    fetch(`${window.location.href}/add`, {
+        method: 'POST',
+        body: JSON.stringify({
+            date_time: time_set,
+            content: content,
+            year: year,
+            month: month,
+            date: date,
+            hour: hour,
+            minute: minute
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            //Print result
+            console.log(result);
+            $(`#warning-view`).html(`
+        <div class="alert alert-success" role="alert">
+            Successfully created post
+        </div>
+        `)
+            //if everything is ok then just redirect back to home page.
+            //to be implemented when everything is done.
+            // window.location.href="/";
+        })
 }
+
+
+function activeTasks() {
+    //make a get request to /active to get all the active list
+    fetch(`${window.location.origin}/active`)
+        .then(response => response.json())
+        .then(result => {
+            // console.log(result)
+            //call tasksDisplay function and pass in result
+            tasksDisplay(result)
+        })
+}
+
+function tasksDisplay(result) {
+    // console.log(result)
+    $(`#tasks-view`).empty()
+    //get the current time using moment:
+    var time_moment = moment()
+    //get the time set from the database:
+    for (var i = 0; i < result.length; i++) {
+        //set the time 
+        var time_set = moment({ year: result[i].year, month: result[i].month - 1, date: result[i].date, hour: result[i].hour, minute: result[i].minute })
+        //get time difference in seconds to use to determine color of the card
+        var time_difference_seconds = time_set.diff(time_moment, 'seconds')
+        //get the time remaining
+        var time_remaining = time_set.countdown()
+        // console.log(`${result[i].content}; ${time_remaining}`)
+
+        //if the difference in minute is > 0 then it is still active and then print it to front page. Also determine if it is within 10 minutes of dead line
+        if (time_difference_seconds > 0 && time_difference_seconds < 600){
+            $(`#tasks-view`).append(`
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">${result[i].content}</h5>
+                    <p class="card-text">${time_remaining}</p>
+                    <button type="button" class="btn btn-primary" onclick="completeTask(${result[i].id})">Complete</button>
+                </div>
+            </div>
+            `)
+        }else if (time_difference_seconds > 600 ){
+            $(`#tasks-view`).append(`
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">${result[i].content}</h5>
+                    <p class="card-text">${time_remaining}</p>
+                    <button type="button" class="btn btn-primary" onclick="completeTask(${result[i].id})">Complete</button>
+                </div>
+            </div>
+            `)
+        }
+    }
+}
+
+function completeTask(id){
+    fetch(`${window.location.origin}/complete/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          completed: true
+        })
+    })
+    .then(response => response.text())
+    .then(result => console.log('updated'))
+}
+
+
