@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     //determine if we are currently in the home page, if we are then load the active list function:
     if (`${window.location.origin}/` == window.location.href) {
         window.setInterval(activeTasks, 1000);
+    }else if(`${window.location.origin}/overdue` == window.location.href){
+        window.setInterval(overdueTasks, 1000);
     }
 });
 //change the format of moment
@@ -58,7 +60,6 @@ function createTodo(event) {
     console.log(`remaining time: ${time_difference_minute} minutes ${time_difference_seconds} seconds`);
     console.log(`add url: ${window.location.href}/add`);
 
-
     // send the post request to 'create/add'
     fetch(`${window.location.href}/add`, {
         method: 'POST',
@@ -75,18 +76,18 @@ function createTodo(event) {
         .then(response => response.json())
         .then(result => {
             //Print result
-            console.log(result);
-            $(`#warning-view`).html(`
-        <div class="alert alert-success" role="alert">
-            Successfully created post
-        </div>
-        `)
+        //     console.log(result);
+        //     $(`#warning-view`).html(`
+        // <div class="alert alert-success" role="alert">
+        //     Successfully created post
+        // </div>
+        // `)
             //if everything is ok then just redirect back to home page.
             //to be implemented when everything is done.
-            // window.location.href="/";
+            window.location.href="/";
+            
         })
 }
-
 
 function activeTasks() {
     //make a get request to /active to get all the active list
@@ -112,10 +113,10 @@ function tasksDisplay(result) {
         var time_difference_seconds = time_set.diff(time_moment, 'seconds')
         //get the time remaining
         var time_remaining = time_set.countdown()
-        // console.log(`${result[i].content}; ${time_remaining}`)
+        // console.log(`${result[i].completed}`)
 
         //if the difference in minute is > 0 then it is still active and then print it to front page. Also determine if it is within 10 minutes of dead line
-        if (time_difference_seconds > 0 && time_difference_seconds < 600){
+        if (time_difference_seconds > 0 && time_difference_seconds <= 600){
             $(`#tasks-view`).append(`
             <div class="card text-white bg-danger">
                 <div class="card-body">
@@ -135,15 +136,65 @@ function tasksDisplay(result) {
                 </div>
             </div>
             `)
+        }else if (time_difference_seconds < 0 && result[i].completed == false){
+            fetch(`${window.location.origin}/overdue/${result[i].id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                  overdue: true,
+                })
+            })
+            .then(response => response.text())           
         }
     }
 }
 
+function overdueTasks() {
+    //make a get request to /active to get all the active list
+    fetch(`${window.location.origin}/overduetasks`)
+        .then(response => response.json())
+        .then(result => {
+            // console.log(result)
+            //call tasksDisplay function and pass in result
+            overdueTasksDisplay(result)
+        })
+}
+
+function overdueTasksDisplay(result) {
+    // console.log(result)
+    $(`#overdue-view`).empty()
+    //get the current time using moment:
+    var time_moment = moment()
+    //get the time set from the database:
+    for (var i = 0; i < result.length; i++) {
+        //set the time 
+        var time_set = moment({ year: result[i].year, month: result[i].month - 1, date: result[i].date, hour: result[i].hour, minute: result[i].minute })
+        //get time difference in seconds to use to determine color of the card
+        var time_difference_seconds = time_set.diff(time_moment, 'seconds')
+        //get the time remaining
+        var time_remaining = time_set.fromNow()
+        // console.log(`${result[i].content}; ${time_remaining}`)
+
+        //if the difference in minute is > 0 then it is still active and then print it to front page. Also determine if it is within 10 minutes of dead line
+        $(`#overdue-view`).append(`
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">${result[i].content}</h5>
+                    <p class="card-text">${time_remaining}</p>
+                    <button type="button" class="btn btn-primary" onclick="completeTask(${result[i].id})">Complete</button>
+                </div>
+            </div>
+        `)
+    }
+}
+
 function completeTask(id){
+    //get the time the task is completed:
+    var completedTime = moment()
     fetch(`${window.location.origin}/complete/${id}`, {
         method: 'PUT',
         body: JSON.stringify({
-          completed: true
+          completed: true,
+          time_set: completedTime
         })
     })
     .then(response => response.text())

@@ -4,9 +4,9 @@
 <html lang="en">
     <head>
         <title>{% block title %}Todo List{% endblock %}</title>
+        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="{% static 'todo/styles.css' %}" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
         <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/js/bootstrap.min.js" integrity="sha384-XEerZL0cuoUbHE4nZReLT7nx9gQrQreJekYhJD9WNWhH8nEW+0c5qq7aIo2Wl30J" crossorigin="anonymous"></script>
@@ -14,20 +14,18 @@
         <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
         <script src="{% static 'todo/countdown.min.js' %}"></script>
         <script src="{% static 'todo/moment-countdown.min.js' %}"></script>
-
+        <meta content="width=device-width, initial-scale=1" name="viewport"/>
         {% block script %}
         {% endblock %}
     </head>
     <body>
 
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Todo</a>
-          
-            <div>
-              <ul class="navbar-nav mr-auto">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light flex-column flex-sm-row">
+            <div class="container-fluid">
+              <ul class="navbar-nav mr-auto" id="nav-bar">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
+                        <a class="nav-link" href="/"><strong>{{ user.username }}</strong></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'index' %}">Current Tasks</a>
@@ -36,7 +34,10 @@
                         <a class="nav-link" href="{% url 'create' %}">Add Tasks</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'index' %}">Completed Tasks</a>
+                        <a class="nav-link" href="{% url 'completed' %}">Completed Tasks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'overdue' %}">Overdue Tasks</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
@@ -52,6 +53,8 @@
               </ul>
             </div>
           </nav>
+
+          
         
         <div class="body">
             {% block body %}

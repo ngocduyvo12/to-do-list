@@ -16,6 +16,7 @@ class Tasks(models.Model):
     hour = models.IntegerField()
     minute = models.IntegerField()
     completed = models.BooleanField(default= False)
+    overdue = models.BooleanField(default= False)
 
     def __str__(self):
         return f"{self.content}"
@@ -33,4 +34,5 @@ class Tasks(models.Model):
             "hour": self.hour,
             "minute": self.minute,
             "completed": self.completed,
+            "overdue": self.overdue
         }    

@@ -8,14 +8,8 @@
 {% block body %}
 
 {% if user.is_authenticated %}
-{% for task in tasks%}
-<div class="card text-white bg-secondary">
-    <div class="card-body">
-        <h5 class="card-title">{{task.content}}</h5>
-        <p class="card-text">Time Completed: {{task.timeset}}</p>
-    </div>
+<div id="overdue-view">
 </div>
-{% endfor %}
 {% endif %}
 
 {% endblock %}

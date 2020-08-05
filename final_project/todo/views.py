@@ -37,8 +37,40 @@ def complete(request, task_id):
         data = json.loads(request.body)
         task.completed = data["completed"]
         task.save()
+        task.timeset = data["time_set"]
+        task.save()
         return JsonResponse({"message": "successfully updated"})   
 
+@login_required
+def completed(request):
+    #get tasks with completed marked
+    tasks = Tasks.objects.filter(completed=True)
+    #order from most upcoming
+    tasks = tasks.order_by("-timeset").all()
+    return render(request, "todo/completed.html", {
+        "tasks": tasks
+    })
+
+def overdue(request):
+    return render(request, "todo/overdue.html")
+
+@login_required
+def overduetasks(request):
+    tasks = Tasks.objects.filter(overdue=True, completed=False)
+    tasks = tasks.order_by("-timeset").all()
+    return JsonResponse([task.serialize() for task in tasks], safe=False)
+
+@csrf_exempt
+@login_required
+def overdueupdate(request, task_id):
+    task = Tasks.objects.get(
+        id = task_id
+    )
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        task.overdue = data["overdue"]
+        task.save()
+        return JsonResponse({"message": "successfully updated"})     
 
 @csrf_exempt
 @login_required
