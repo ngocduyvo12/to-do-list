@@ -12,20 +12,20 @@ from datetime import tzinfo, timedelta, datetime
 
 from .models import User, Tasks
 
-#return all post here
+#return all post here#
 def index(request):
     return render(request, "todo/index.html")
 
 @login_required
 def active(request):
-    #get all the task from model
+    #get all the task from model#
     tasks = Tasks.objects.filter(completed=False)
-    #return task in order of most upcoming first
+    #return task in order of most upcoming first#
     tasks = tasks.order_by("timeset").all()
     return JsonResponse([task.serialize() for task in tasks], safe=False)
 
 def create(request):
-    return render(request, "todo/create.html")    
+    return render(request, "todo/create.html")
 
 @csrf_exempt
 @login_required
@@ -43,9 +43,9 @@ def complete(request, task_id):
 
 @login_required
 def completed(request):
-    #get tasks with completed marked
+    #get tasks with completed marked#
     tasks = Tasks.objects.filter(completed=True)
-    #order from most upcoming
+    #order from most upcoming#
     tasks = tasks.order_by("-timeset").all()
     return render(request, "todo/completed.html", {
         "tasks": tasks
@@ -75,10 +75,10 @@ def overdueupdate(request, task_id):
 @csrf_exempt
 @login_required
 def add(request):
-    #adding a new task must be via post
+    #adding a new task must be via post#
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
-    # get data from request
+    #get data from request#
     data = json.loads(request.body)
     content = data.get("content", "")
     year = data.get("year", "")
@@ -89,27 +89,25 @@ def add(request):
     timeset = data.get("date_time", "")
 
     task = Tasks(
-        user = request.user,
-        content = content,
-        year = year,
-        month = month,
-        date = date,
-        hour = hour,
-        minute = minute,
-        timeset = timeset,
+        user=request.user,
+        content=content,
+        year=year,
+        month=month,
+        date=date,
+        hour=hour,
+        minute=minute,
+        timeset=timeset,
     )
     task.save()
     return JsonResponse({"message": "Task created successfully.", "timesaved": task.timeset}, status=201)    
 
 def login_view(request):
     if request.method == "POST":
-
-        # Attempt to sign user in
+        #Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
-
-        # Check if authentication successful
+        #Check if authentication successful
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
@@ -125,21 +123,18 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
-
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
-
-        # Ensure password matches confirmation
+        #Ensure password matches confirmation#
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
             return render(request, "todo/register.html", {
                 "message": "Passwords must match."
             })
-
-        # Attempt to create new user
+        #Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
